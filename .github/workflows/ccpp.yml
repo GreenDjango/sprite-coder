@@ -6,9 +6,15 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v1
+    - name: aclocal
+      run: aclocal
+    - name: autoconf
+      run: autoconf
+    - name: automake
+      run: automake --add-missing
     - name: configure
       run: ./configure
     - name: make
