@@ -9,7 +9,23 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - name: csfml
+    - name: SFML dep
       run: sudo apt-get install build-essential cmake git libx11-dev freeglut3-dev libxcb-image0-dev libudev-dev libjpeg8-dev libopenal-dev libsndfile1-dev libfreetype6-dev
+    - name: SFML
+      run: sudo apt-get install libsfml-dev
+    - name: clone CSFML
+      run: |
+        git clone https://github.com/SFML/CSFML
+        cd CSFML
+        git checkout $(git describe --tags $(git rev-list --tags --max-count=1))
+        cd ..
+    - name: build CSFML
+      run: |
+        cd CSFML
+        SFML="$(realpath ../SFML)"
+        cmake -DCMAKE_MODULE_PATH="$SFML/cmake/Modules" .
+        make
+        sudo make install
+        cd ..
     - name: make
       run: make
