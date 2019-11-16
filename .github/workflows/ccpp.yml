@@ -9,17 +9,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - name: aclocal
-      run: aclocal
-    - name: autoconf
-      run: autoconf
-    - name: automake
-      run: automake --add-missing
-    - name: configure
-      run: ./configure
+    - name: csfml
+      run: apt-get install build-essential cmake git libx11-dev freeglut3-dev libxcb-image0-dev libudev-dev libjpeg8-dev libopenal-dev libsndfile1-dev libfreetype6-dev
     - name: make
       run: make
-    - name: make check
-      run: make check
-    - name: make distcheck
-      run: make distcheck

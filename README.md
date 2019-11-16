@@ -1,21 +1,15 @@
 # Sprite Coder
+> Csfml and c sprite editor/encoder for generate fast resources
 
 ## Build
 
-### Build on maintainer’s system:
-```
-aclocal # Set up an m4 environment
-autoconf # Generate configure from configure.ac
-automake --add-missing # Generate Makefile.in from Makefile.am
-./configure # Generate Makefile from Makefile.in
-make distcheck # Use Makefile to build and test a tarball to distribute
-```
+### Build with custom system:
+Modify `global`
 
-### Build on the end-user’s system:
+### Build Project:
 ```
-./configure # Generate Makefile from Makefile.in
-make # Use Makefile to build the program
-make install # Use Makefile to install the program
+make           #generate executable
+make fclean    #clean all repository
 ```
 
 ### [The magic behind configure, make, make install](https://thoughtbot.com/blog/the-magic-behind-configure-make-make-install)
