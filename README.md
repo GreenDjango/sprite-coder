@@ -4,7 +4,7 @@
 ## Build
 
 ### Build with custom system:
-Modify `global`
+Modify `global.mk` variables
 
 ### Build Project:
 ```
