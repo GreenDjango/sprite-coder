@@ -1,0 +1,133 @@
+#! /bin/bash
+
+# output file
+file_cfg="sprite_coder.cfg"
+
+
+declare -A config
+config[GLIB]=GLIB_CSFML
+config[BLIB]=BLIB_CSFML
+config[VALGRIND_STATUS]=DISABLE
+config[CLOCK_SLOT]=4
+
+#
+# Help screen
+#
+function help()
+{
+	cat << EOF
+Configuration script for the sprite-code applications.
+Usage: $0 [options...]
+
+The configuration file "make.cfg" should be reside in the same
+level of "Makefile".
+
+Configure graphical librairy:
+	--glib=<lib>		For now, only "GLIB_CSFML" can be used.
+				Default: GLIB_CSFML
+
+Configure bitmap librairy:
+	--blib=<lib>		For now, only "BLIB_CSFML" and "BLIB_CUSTOM" can be used.
+				* BLIB_CSFML	Use some CSFML abstraction function to handle bitmap format.
+				* BLIB_CUSTOM	Use custom primitives to handle bitmap format.
+				Default: BLIB_CSFML
+
+Size limits:
+	--clock-slot=NUM	Number of clock simultaly handled by the custom
+				abstraction layer.
+				Default: 4
+
+Deprecated options (to be removed):
+	--valgrind=STATUS	"ENABLE" or "DISABLE" valgrind compilations flags.
+				Default: DISABLE
+
+EOF
+	exit 0
+}
+
+#
+# Configuration with number update
+#
+function option_value_update()
+{
+	# Check potential error.
+	if [[ "$1" -gt "0" ]]; then
+		config[$2]=$1
+	else
+		# Display error log.
+		echo "error: need positive interger value." >&2
+		exit 1
+	fi
+}
+
+#
+# Generate configuration file based on
+# user flags.
+#
+function generate_config_file()
+{
+	# Check valgrind flags
+	if [ "${config[VALGRIND_STATUS]}" == "ENABLE" ]; then echo "-g3"; fi
+
+	# Set define with value.
+	echo "-D CLOCK_STACK_SIZE=${config[CLOCK_SLOT]}"
+
+	# Set other define.
+	echo "-D ${config[GLIB]}"
+	echo "-D ${config[BLIB]}"
+}
+
+#
+# Main() - program entry
+#
+# Check if we can generate configuration file.
+if ! [[ -f Makefile ]]; then
+	echo "warning: you should move the '$file_gcc' beside the Makefile"
+fi
+
+for arg; do case "$arg" in
+	--help | -h) 			help;;
+	--clock-slot=*)			option_value_update ${arg#*=} CLOCK_SLOT;;
+
+	# Bitmap librairy configuration.
+	--blib=*)
+		case ${arg#*=} in
+			"BLIB_CSFML")	config[BLIB]=BLIB_CSFML;;
+			"BLIB_CUSTOM")	config[BLIB]=BLIB_CUSTOM;;
+			*)
+				echo "error: invalid bitmap librairy '${arg#*=}'" >&2
+				exit 1
+		esac;;
+
+	# Graphical librairy configuration
+	--glib=*)
+		case ${arg#*=} in
+			"GLIB_CSFML")	config[GLIB]=GLIB_CSFML;;
+			*)
+				echo "error: invalid graphical librairy '${arg#*=}'" >&2
+				exit 1
+		esac;;
+
+	# Valgrind configuration
+	--valgrind=*)
+		case ${arg#*=} in
+			"ENABLE")	config[VALGRIND_STATUS]=ENABLE;;
+			"DISABLE")	config[VALGRIND_STATUS]=DISABLE;;
+			*)
+				echo "error: invalid valgrind status '${arg#*=}'" >&2
+				exit 1
+		esac;;
+
+	# Error management.
+	*)
+		echo "error: unreconized argument '$arg'" >&2
+		exit 1
+esac; done
+
+# Generate configuration file
+echo "Configuration saved in '$file_cfg'."
+ generate_config_file > $file_cfg
+
+# DIsplay generated file and exit.
+cat $file_cfg
+exit 0

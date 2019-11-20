@@ -57,3 +57,4 @@ dkms.conf
 
 # Custom
 sprite-coder
+*.cfg

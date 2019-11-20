@@ -1,6 +1,29 @@
 #include "bitmap.h"
 #include <stdio.h>
 #include <unistd.h>
+
+
+#if defined(BLIB_CSFML)
+int bitmap_open(bitmap_t *bitmap, const char *path)
+{
+	// Try to open bitmap.
+	bitmap->private = sfImage_createFromFile(path);
+	if (bitmap->private == NULL)
+	{
+		dprintf(STDERR_FILENO, "bitmap: open \"%s\" error !\n", path);
+		return (-1);
+	}
+
+	// Get image informations.
+	sfVector2u image_size = sfImage_getSize(bitmap->private);
+	bitmap->height = image_size.y;
+	bitmap->width = image_size.x;
+	bitmap->bpp = 32;
+	return (0);
+}
+
+#elif defined(BLIB_CUSTOM)
+// Include internal header.
 #include <fcntl.h>
 #include <stdlib.h>
 
@@ -61,7 +84,7 @@ int bitmap_open(bitmap_t *bitmap, char const *path)
 			dib.size != BITMAPINFOHEADER)
 	{
 		dprintf(STDERR_FILENO, "Bitmap (DIB) header validity error (%d) !\n", dib.size);
-		return (-5);
+	//	return (-5);
 	}
 	// Get bitmap informations.
 	bitmap->width = dib.bitmap_width;
@@ -77,21 +100,24 @@ int bitmap_open(bitmap_t *bitmap, char const *path)
 	// Dump data
 	//---
 	// Create internal buffer.
-	bitmap->data_size = (((bitmap->width * bitmap->bpp) / 8) + 1) * bitmap->height;
-	bitmap->data = (uint8_t*)malloc(bitmap->data_size);
-	if (bitmap->data == NULL)
+	int data_size = (((bitmap->width * bitmap->bpp) / 8) + 1) * bitmap->height;
+	bitmap->private = malloc(data_size);
+	if (bitmap->private == NULL)
 	{
 		dprintf(STDERR_FILENO, "bitmap: open() - data alloc error !\n");
 		return (-6);
 	}
 	// read data.
 	lseek(fd, BITMAP_CONV_BE_32(header.data_offset), SEEK_SET);
-	read(fd, bitmap->data, bitmap->data_size);
+	read(fd, bitmap->private, data_size);
 	
 	//[Debug] display real data size.
-	printf("bitmap real data size = %do\n", bitmap->data_size);
+	printf("bitmap real data size = %do\n", data_size);
 
 	// Close bitmap file
 	close(fd);
 	return (0);
 }
+#else
+	#error "error: no bitmap library specified"
+#endif
