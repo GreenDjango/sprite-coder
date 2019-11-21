@@ -9,13 +9,12 @@
 ##---
 ##	Static variables
 ##--
-EXEC		:= sprite-coder
+EXEC		:= sprite_coder
 
 CC		:= gcc
-CFLAGS		:= -Werror -Wall -W -Wextra -std=c18
+CFLAGS		:= -Werror -Wall -W -Wextra -std=c18 -D _GNU_SOURCE
 EXTRA		:= -lcsfml-graphics -lcsfml-system \
-			-lcsfml-window -lcsfml-audio \
-			-D _GNU_SOURCE -D _POSIX_C_SOURCE
+			-lcsfml-window -lcsfml-audio
 
 HEADER		:= include
 BUILD		:= build
@@ -25,7 +24,6 @@ green		:= \033[1;32m
 blue		:= \033[1;34m
 white		:= \033[1;37m
 nocolor		:= \033[1;0m
-
 
 
 
@@ -41,6 +39,16 @@ OBJ	:= $(patsubst %,$(BUILD)/%.o,$(subst /,_,$(subst src/,,$(basename $(SRC)))))
 
 
 
+##---
+##	Get configuration files.
+##---
+CONFIG	:= sprite_coder.cfg
+ifeq ($(wildcard $(CONFIG)), $(CONFIG))
+CFLAGS	+= @$(CONFIG)
+else
+CFLAGS	+= -D BLIB_CUSTOM -D GLIB_CSFML -g3
+endif
+
 
 ##---
 ##	General rules
@@ -48,7 +56,7 @@ OBJ	:= $(patsubst %,$(BUILD)/%.o,$(subst /,_,$(subst src/,,$(basename $(SRC)))))
 all: | $(BUILD) $(EXEC)
 
 $(EXEC): $(OBJ)
-	$(CC) -o $@ $(OBJ) -I $(HEADER)
+	$(CC) $(CFLAGS) -o $@ $(OBJ) -I $(HEADER) $(EXTRA)
 
 $(BUILD):
 	@ printf "Create $(blue)$@$(nocolor) directory\n"
